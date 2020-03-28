@@ -30,6 +30,7 @@ app = Dash(
     external_scripts=body.external_scripts,
 )
 app.layout = body.html
+app.title = 'Penn Medicine CHIME'
 server = app.server
 
 @app.callback(body.callback_outputs, list(body.callback_inputs.values()))
@@ -42,4 +43,3 @@ def callback(*args):  # pylint: disable=W0612
 if __name__ == "__main__":
 #    main()
     app.run_server(host='0.0.0.0')
-
