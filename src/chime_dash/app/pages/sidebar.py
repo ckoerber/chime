@@ -38,7 +38,7 @@ _SIDEBAR_ELEMENTS = ReadOnlyDict(OrderedDict(
     current_hospitalized={"type": "number", "min": 0, "step": 1},
     ###
     spread_parameters={"type": "header", "size": "h4"},
-    spread_parameters_checkbox={"type": "switch", "value": False},
+    pick_hospitalized_checkbox={"type": "switch", "value": False},
     date_first_hospitalized={
         "type": "date",
         "min_date_allowed": datetime(2019, 10, 1),

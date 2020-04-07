@@ -115,7 +115,7 @@ class SidebarCallbacks(ComponentCallbacks):
         for key, input_type in i.input_type_map.items():
             # todo remove this hack needed because of how Checklist type (used for switch input) returns values
             if input_type == "switch":
-                result[key] = False if result[key] == [True] else True
+                result[key] = False if result[key] != [True] else True
             elif input_type == "date":
                 value = result[key]
                 try:
@@ -131,8 +131,12 @@ class SidebarCallbacks(ComponentCallbacks):
         Returns Parameters
         """
         inputs_dict = SidebarCallbacks.get_formated_values(i, input_values)
-        dt = inputs_dict["doubling_time"] if inputs_dict["doubling_time"] else None
-        dfh = inputs_dict["date_first_hospitalized"] if not dt else None
+
+        print(inputs_dict["pick_hospitalized_checkbox"])
+        pick_hospitalized_checkbox = inputs_dict.get("pick_hospitalized_checkbox", False)
+        dt = inputs_dict["doubling_time"] if not pick_hospitalized_checkbox else None
+        dfh = inputs_dict["date_first_hospitalized"] if pick_hospitalized_checkbox else None
+
         pars = Parameters(
             population=inputs_dict["population"],
             current_hospitalized=inputs_dict["current_hospitalized"],
@@ -162,18 +166,9 @@ class SidebarCallbacks(ComponentCallbacks):
                 raise PreventUpdate
             return SidebarCallbacks.update_parameters(component_instance, *args)
 
-        def hospitalized_checkbox_to_first_date(i_know_first_hospitalized):
-            if not i_know_first_hospitalized:
-                return
-            else:
-                raise ValueError('Do not update')
-
-
-        def hospitalized_checkbox_to_doubling_time(i_know_first_hospitalized):
-            if i_know_first_hospitalized:
-                return
-            else:
-                raise ValueError('Do not update')
+        def pick_hospitalized_checkbox(state):
+            pick_date = False if state == [True] else True
+            return [pick_date, not pick_date]
 
         super().__init__(
             component_instance=component_instance,
@@ -185,14 +180,9 @@ class SidebarCallbacks(ComponentCallbacks):
                     stores=["sidebar-store"],
                 ),
                 ChimeCallback(
-                    changed_elements={'spread_parameters_checkbox': 'value'},
-                    dom_updates={'date_first_hospitalized': 'date'},
-                    callback_fn=hospitalized_checkbox_to_first_date
-                ),
-                ChimeCallback(
-                    changed_elements={'spread_parameters_checkbox': 'value'},
-                    dom_updates={'doubling_time': 'value'},
-                    callback_fn=hospitalized_checkbox_to_doubling_time
+                    changed_elements={'pick_hospitalized_checkbox': 'value'},
+                    dom_updates={'date_first_hospitalized': 'disabled', 'doubling_time': 'disabled'},
+                    callback_fn=pick_hospitalized_checkbox
                 ),
             ]
         )
@@ -272,17 +262,17 @@ class RootCallbacks(ComponentCallbacks):
         super().__init__(
             component_instance=component_instance,
             callbacks=[
-                ChimeCallback(
-                    changed_elements={"location": "hash"},
-                    dom_updates={"root-store": "data"},
-                    callback_fn=hash_changed_helper,
-                    stores=["root-store"],
-                ),
-                ChimeCallback(
-                    changed_elements={"root-store": "modified_timestamp", "sidebar-store": "modified_timestamp"},
-                    dom_updates={"location": "hash", **sidebar_inputs},
-                    callback_fn=stores_changed_helper,
-                    stores=["root-store", "sidebar-store"],
-                ),
+                # ChimeCallback(
+                #     changed_elements={"location": "hash"},
+                #     dom_updates={"root-store": "data"},
+                #     callback_fn=hash_changed_helper,
+                #     stores=["root-store"],
+                # ),
+                # ChimeCallback(
+                #     changed_elements={"root-store": "modified_timestamp", "sidebar-store": "modified_timestamp"},
+                #     dom_updates={"location": "hash", **sidebar_inputs},
+                #     callback_fn=stores_changed_helper,
+                #     stores=["root-store", "sidebar-store"],
+                # ),
             ]
         )
